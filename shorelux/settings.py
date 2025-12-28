@@ -34,7 +34,8 @@ DEBUG = os.getenv("DEBUG", "False") == "True"
 
 ALLOWED_HOSTS = [
     "localhost",
-    "127.0.0.1"
+    "127.0.0.1",
+    "https://shorelux-backend.onrender.com"
 ]
 
 
@@ -70,6 +71,15 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
+CORS_ALLOW_ALL_ORIGINS = True
+
+# CORS (development)
+
+CORS_ALLOW_HEADERS = list(default_headers) + [
+    'authorization',
+]
+
+
 ROOT_URLCONF = 'shorelux.urls'
 
 TEMPLATES = [
@@ -100,20 +110,11 @@ WSGI_APPLICATION = 'shorelux.wsgi.application'
 #     }
 # }
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'shorelux_db',
-        'USER': 'postgres',
-        'PASSWORD': 'postgre',
-        'HOST': 'localhost',
-        'PORT': '5432',
-    }
-}
+import dj_database_url
 
-########## admin ##########
-#shorelux_admin : username
-#ShoreLux@2026 : password
+DATABASES = {
+    "default": dj_database_url.config(default=os.environ.get("DATABASE_URL"))
+}
 
 
 # Password validation
@@ -152,6 +153,9 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 
+# STATIC_URL = "/static/"
+STATIC_ROOT = BASE_DIR / "staticfiles"
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
@@ -185,11 +189,7 @@ SPECTACULAR_SETTINGS = {
     "VERSION": "1.0.0",
 }
 
-# CORS (development)
-CORS_ALLOW_ALL_ORIGINS = True
-CORS_ALLOW_HEADERS = list(default_headers) + [
-    'authorization',
-]
+
 
 # Logging: print DEBUG to console (development only)
 LOGGING = {
@@ -249,4 +249,6 @@ CELERY_BEAT_SCHEDULE = {
         "schedule": crontab(minute="*/5"),
     }
 }
+
+
 
