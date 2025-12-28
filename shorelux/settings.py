@@ -30,7 +30,11 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 
 SECRET_KEY = os.getenv("SECRET_KEY", "unsafe-secret-for-dev-only")
-DEBUG = os.getenv("DEBUG", "False") == "True"
+
+DEBUG = os.getenv('DEBUG', 'False') == 'True'
+   
+if DEBUG:
+    CORS_ALLOW_ALL_ORIGINS = True
 
 
 ALLOWED_HOSTS = [
@@ -75,14 +79,15 @@ MIDDLEWARE = [
 
 CORS_ALLOW_ALL_ORIGINS = False
 
-CORS_ALLOWED_ORIGINS = [
-    "https://shoreluxsoftware.onrender.com",
-]
+CORS_ALLOWED_ORIGINS = [ 
+       "https://shoreluxsoftware.onrender.com",
+       "https://shorelux-backend.onrender.com",  # If frontend redirects to backend
+   ]
 
 CORS_ALLOW_CREDENTIALS = True
 
 CSRF_TRUSTED_ORIGINS = [
-    "https://shoreluxsoftware.onrender.com"
+    "https://shoreluxsoftware.onrender.com",
     # "https://shorelux-backend.onrender.com",
 ]
 
