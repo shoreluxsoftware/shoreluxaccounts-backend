@@ -36,7 +36,8 @@ DEBUG = os.getenv("DEBUG", "False") == "True"
 ALLOWED_HOSTS = [
     "localhost",
     "127.0.0.1",
-    "shorelux-backend.onrender.com"
+    "shorelux-backend.onrender.com",
+    "shoreluxsoftware.onrender.com"
 ]
 
 
@@ -81,8 +82,8 @@ CORS_ALLOWED_ORIGINS = [
 CORS_ALLOW_CREDENTIALS = True
 
 CSRF_TRUSTED_ORIGINS = [
-    "https://shoreluxsoftware.onrender.com",
-    "https://shorelux-backend.onrender.com",
+    "https://shoreluxsoftware.onrender.com"
+    # "https://shorelux-backend.onrender.com",
 ]
 
 CORS_ALLOW_HEADERS = list(default_headers) + [
