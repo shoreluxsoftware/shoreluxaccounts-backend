@@ -71,13 +71,24 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_ALL_ORIGINS = False
 
-# CORS (development)
+CORS_ALLOWED_ORIGINS = [
+    "https://shoreluxsoftware.onrender.com",
+]
+
+CORS_ALLOW_CREDENTIALS = True
+
+CSRF_TRUSTED_ORIGINS = [
+    "https://shoreluxsoftware.onrender.com",
+    "https://shorelux-backend.onrender.com",
+]
 
 CORS_ALLOW_HEADERS = list(default_headers) + [
     'authorization',
 ]
+
+
 
 
 ROOT_URLCONF = 'shorelux.urls'

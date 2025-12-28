@@ -16,7 +16,10 @@ from datetime import datetime
 from .email_service import EmailNotificationService
 
 
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
 
+@method_decorator(csrf_exempt, name='dispatch')
 class UnifiedLoginAPIView(APIView):
     permission_classes = [AllowAny]
 
