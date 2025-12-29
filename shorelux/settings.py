@@ -59,6 +59,7 @@ INSTALLED_APPS = [
     'drf_spectacular',
     'drf_spectacular_sidecar', 
     'corsheaders',
+    'django_celery_beat',
     'admin_management',
     'staff_management.apps.StaffManagementConfig',
     # 'staff_management',
