@@ -490,10 +490,83 @@ class MonthlyTrendLineAPIView(APIView):
 # ========================
 
 
+# class RequestOTPAPIView(APIView):
+#     permission_classes = [IsAuthenticated]
+
+#     def post(self, request):
+#         serializer = OTPRequestSerializer(data=request.data)
+
+#         if not serializer.is_valid():
+#             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+#         verification_type = serializer.validated_data['verification_type']
+#         object_id = serializer.validated_data.get('object_id')
+
+#         # --------------------------------------------------
+#         # 1. Remove old unverified OTPs
+#         # --------------------------------------------------
+#         OTPVerification.objects.filter(
+#             user=request.user,
+#             verification_type=verification_type,
+#             is_verified=False
+#         ).delete()
+
+#         # --------------------------------------------------
+#         # 2. Generate OTP (NO EXTRA FILE)
+#         # --------------------------------------------------
+#         otp = ''.join(random.choices(string.digits, k=6))
+
+#         # --------------------------------------------------
+#         # 3. Send OTP via EMAIL ONLY
+#         # --------------------------------------------------
+#         email_service = EmailNotificationService()
+
+#         email_result = email_service.send_otp_email(
+#             otp=otp,
+#             verification_type=verification_type,
+#             username=request.user.username
+#         )
+
+#         if not email_result.get("success"):
+#             return Response(
+#                 {"error": "Failed to send OTP email"},
+#                 status=status.HTTP_400_BAD_REQUEST
+#             )
+
+#         # --------------------------------------------------
+#         # 4. Save OTP
+#         # --------------------------------------------------
+#         OTPVerification.objects.create(
+#             user=request.user,
+#             otp=otp,
+#             verification_type=verification_type,
+#             object_id=object_id,
+#             expires_at=timezone.now() + timedelta(minutes=10)
+#         )
+
+#         # --------------------------------------------------
+#         # 5. Success
+#         # --------------------------------------------------
+#         return Response(
+#             {
+#                 "message": "OTP sent successfully to admin email",
+#                 "expires_in_seconds": 600
+#             },
+#             status=status.HTTP_201_CREATED
+#         )
+
+from login.views import send_email_async  # Import at top
+
 class RequestOTPAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
+        from admin_management.models import OTPVerification
+        from datetime import timedelta
+        from django.utils import timezone
+        import random
+        import string
+        
         serializer = OTPRequestSerializer(data=request.data)
 
         if not serializer.is_valid():
@@ -502,40 +575,25 @@ class RequestOTPAPIView(APIView):
         verification_type = serializer.validated_data['verification_type']
         object_id = serializer.validated_data.get('object_id')
 
-        # --------------------------------------------------
-        # 1. Remove old unverified OTPs
-        # --------------------------------------------------
+        # Remove old unverified OTPs
         OTPVerification.objects.filter(
             user=request.user,
             verification_type=verification_type,
             is_verified=False
         ).delete()
 
-        # --------------------------------------------------
-        # 2. Generate OTP (NO EXTRA FILE)
-        # --------------------------------------------------
+        # Generate OTP
         otp = ''.join(random.choices(string.digits, k=6))
 
-        # --------------------------------------------------
-        # 3. Send OTP via EMAIL ONLY
-        # --------------------------------------------------
-        email_service = EmailNotificationService()
-
-        email_result = email_service.send_otp_email(
+        # Send OTP via email in background thread
+        send_email_async(
+            email_type="otp",
             otp=otp,
             verification_type=verification_type,
             username=request.user.username
         )
 
-        if not email_result.get("success"):
-            return Response(
-                {"error": "Failed to send OTP email"},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
-        # --------------------------------------------------
-        # 4. Save OTP
-        # --------------------------------------------------
+        # Save OTP
         OTPVerification.objects.create(
             user=request.user,
             otp=otp,
@@ -544,17 +602,13 @@ class RequestOTPAPIView(APIView):
             expires_at=timezone.now() + timedelta(minutes=10)
         )
 
-        # --------------------------------------------------
-        # 5. Success
-        # --------------------------------------------------
         return Response(
             {
-                "message": "OTP sent successfully to admin email",
+                "message": "OTP sent successfully to your email",
                 "expires_in_seconds": 600
             },
             status=status.HTTP_201_CREATED
         )
-
 
 # ========================
 # OTP Verification API

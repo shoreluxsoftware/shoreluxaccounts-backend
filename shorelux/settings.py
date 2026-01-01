@@ -14,7 +14,6 @@ from pathlib import Path
 from datetime import timedelta
 from corsheaders.defaults import default_headers
 
-
 import os
 from dotenv import load_dotenv
 
@@ -23,26 +22,24 @@ load_dotenv()
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
-
-
 
 SECRET_KEY = os.getenv("SECRET_KEY", "unsafe-secret-for-dev-only")
 
 DEBUG = os.getenv('DEBUG', 'False') == 'True'
-   
-if DEBUG:
-    CORS_ALLOW_ALL_ORIGINS = True
 
 
-ALLOWED_HOSTS = ["*"]
+ALLOWED_HOSTS = [
+    "localhost",
+    "127.0.0.1",
+]
 
 
 # Application definition
 
 INSTALLED_APPS = [
+    'corsheaders',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -51,21 +48,18 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'rest_framework_simplejwt',
+    "django_apscheduler",
     'drf_spectacular',
-    'drf_spectacular_sidecar', 
-    'corsheaders',
-    'django_celery_beat',
+    'drf_spectacular_sidecar',
     'admin_management',
     'staff_management.apps.StaffManagementConfig',
-    # 'staff_management',
     'login',
-    
 ]
 
 MIDDLEWARE = [
-    'corsheaders.middleware.CorsMiddleware',
+    'corsheaders.middleware.CorsMiddleware',  
     'django.middleware.security.SecurityMiddleware',
-     "whitenoise.middleware.WhiteNoiseMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -74,25 +68,25 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-CORS_ALLOW_ALL_ORIGINS = False
+# ==========================================
+# CORS CONFIGURATION - FIXED FOR LOCALHOST
+# ==========================================
 
-CORS_ALLOWED_ORIGINS = [ 
-    #    "https://shoreluxsoftware.onrender.com",
-    #    "https://shorelux-backend.onrender.com",  # If frontend redirects to backend
-   ]
+CORS_ALLOW_ALL_ORIGINS = True
 
 CORS_ALLOW_CREDENTIALS = True
 
-CSRF_TRUSTED_ORIGINS = [
-    # "https://shoreluxsoftware.onrender.com",
-    # "https://shorelux-backend.onrender.com",
-]
-
-CORS_ALLOW_HEADERS = list(default_headers) + [
+CORS_ALLOW_HEADERS = [
+    "accept",
+    "accept-encoding",
     "authorization",
     "content-type",
+    "dnt",
+    "origin",
+    "user-agent",
+    "x-csrftoken",
+    "x-requested-with",
 ]
-
 
 ROOT_URLCONF = 'shorelux.urls'
 
@@ -113,24 +107,13 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'shorelux.wsgi.application'
 
-
-# Database
-# https://docs.djangoproject.com/en/5.2/ref/settings/#databases
-
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': BASE_DIR / 'db.sqlite3',
-#     }
-# }
-
+# ==========================================
+# DATABASE CONFIGURATION
+# ==========================================
 import dj_database_url
 
 DATABASES = {
-    "default": dj_database_url.config(
-        default=os.getenv("DATABASE_URL"),
-        conn_max_age=600
-    )
+    "default": dj_database_url.config(default=os.environ.get("DATABASE_URL"))
 }
 
 
@@ -152,26 +135,25 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE='Asia/Kolkata'
+TIME_ZONE = 'Asia/Kolkata'
 
 USE_I18N = True
 
 USE_TZ = True
 
-
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
 STATIC_URL = 'static/'
-
-# STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
+
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
@@ -182,6 +164,10 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
 AUTH_USER_MODEL = 'admin_management.User'
+
+# ==========================================
+# REST FRAMEWORK CONFIGURATION
+# ==========================================
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
@@ -206,66 +192,84 @@ SPECTACULAR_SETTINGS = {
     "VERSION": "1.0.0",
 }
 
+# ==========================================
+# LOGGING CONFIGURATION
+# ==========================================
 
+# Create logs directory if it doesn't exist
+LOGS_DIR = BASE_DIR / 'logs'
+LOGS_DIR.mkdir(exist_ok=True)
 
-# Logging: print DEBUG to console (development only)
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message}',
+            'style': '{',
+        },
+        'simple': {
+            'format': '{levelname} {message}',
+            'style': '{',
+        },
+    },
     'handlers': {
-        'console': {'class': 'logging.StreamHandler'},
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'simple',
+        },
+        'file': {
+            'class': 'logging.FileHandler',
+            'filename': BASE_DIR / 'logs' / 'debug.log',
+            'formatter': 'verbose',
+        },
     },
     'root': {
         'handlers': ['console'],
         'level': 'DEBUG' if DEBUG else 'INFO',
     },
     'loggers': {
-        'django': {'handlers': ['console'], 'level': 'INFO', 'propagate': False},
+        'django': {
+            'handlers': ['console'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+        'login': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+            'propagate': False,
+        },
+        'admin_management': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+            'propagate': False,
+        },
+        'staff_management': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+            'propagate': False,
+        },
     },
 }
-
-
-
-# ==========================================
-# CELERY CONFIGURATION (For Task Scheduling)
-# ==========================================
-CELERY_BROKER_URL = os.getenv('CELERY_BROKER_URL', 'redis://localhost:6379/0')
-CELERY_RESULT_BACKEND = os.getenv('CELERY_RESULT_BACKEND', 'redis://localhost:6379/0')
-CELERY_ACCEPT_CONTENT = ['json']
-CELERY_TASK_SERIALIZER = 'json'
-CELERY_RESULT_SERIALIZER = 'json'
-
-CELERY_ENABLE_UTC = False
-CELERY_TIMEZONE = "Asia/Kolkata"
-
-
 
 # ==========================================
 # EMAIL CONFIGURATION
 # ==========================================
+
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 EMAIL_HOST = "smtp.gmail.com"
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 
-EMAIL_HOST_USER=os.getenv("EMAIL_HOST_USER")
-EMAIL_HOST_PASSWORD=os.getenv("EMAIL_HOST_PASSWORD")
-DEFAULT_FROM_EMAIL=os.getenv("DEFAULT_FROM_EMAIL")
-ALERT_EMAIL=os.getenv("ALERT_EMAIL")
+EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER")
+EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
+DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL")
+ALERT_EMAIL = os.getenv("ALERT_EMAIL")
 
+# ==========================================
+# WEBSITE BOOKING API CONFIGURATION
+# ==========================================
 
 WEBSITE_API_KEY = os.getenv("WEBSITE_API_KEY")
-WEBSITE_FETCH_API_KEY=os.getenv("WEBSITE_FETCH_API_KEY")
+WEBSITE_FETCH_API_KEY = os.getenv("WEBSITE_FETCH_API_KEY")
 WEBSITE_BOOKING_API_URL = os.getenv("WEBSITE_BOOKING_API_URL")
-
-from celery.schedules import crontab
-
-CELERY_BEAT_SCHEDULE = {
-    "sync-website-bookings-every-5-minutes": {
-        "task": "staff_management.tasks.fetch_website_bookings",
-        "schedule": crontab(minute="*/5"),
-    }
-}
-
-
-
