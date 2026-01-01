@@ -26,29 +26,22 @@ def send_email_async(email_type, **kwargs):
     Supported types: login_alert, otp, checkin_reminder
     """
     def _send():
+        logger.info(f"📧 Email thread started for {email_type}")
         try:
             email_service = EmailNotificationService()
-            
+
             if email_type == "login_alert":
                 email_service.send_login_alert(
                     username=kwargs.get('username'),
                     staff_code=kwargs.get('staff_code'),
                     login_datetime=kwargs.get('login_datetime')
                 )
-            elif email_type == "otp":
-                email_service.send_otp_email(
-                    otp=kwargs.get('otp'),
-                    verification_type=kwargs.get('verification_type'),
-                    username=kwargs.get('username')
-                )
-            elif email_type == "checkin_reminder":
-                email_service.send_checkin_reminder(kwargs.get('booking'))
-                
+
+            logger.info(f"✅ Email thread finished for {email_type}")
+
         except Exception as e:
             logger.error(f"❌ Background email error ({email_type}): {str(e)}")
-    
-    thread = threading.Thread(target=_send, daemon=True)
-    thread.start()
+
 
 
 @method_decorator(csrf_exempt, name='dispatch')
