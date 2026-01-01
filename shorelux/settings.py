@@ -37,12 +37,7 @@ if DEBUG:
     CORS_ALLOW_ALL_ORIGINS = True
 
 
-ALLOWED_HOSTS = [
-    "localhost",
-    "127.0.0.1",
-    "shorelux-backend.onrender.com",
-    "shoreluxsoftware.onrender.com"
-]
+ALLOWED_HOSTS = ["*"]
 
 
 # Application definition
@@ -70,6 +65,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
+     "whitenoise.middleware.WhiteNoiseMiddleware",
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -81,14 +77,14 @@ MIDDLEWARE = [
 CORS_ALLOW_ALL_ORIGINS = False
 
 CORS_ALLOWED_ORIGINS = [ 
-       "https://shoreluxsoftware.onrender.com",
-       "https://shorelux-backend.onrender.com",  # If frontend redirects to backend
+    #    "https://shoreluxsoftware.onrender.com",
+    #    "https://shorelux-backend.onrender.com",  # If frontend redirects to backend
    ]
 
 CORS_ALLOW_CREDENTIALS = True
 
 CSRF_TRUSTED_ORIGINS = [
-    "https://shoreluxsoftware.onrender.com",
+    # "https://shoreluxsoftware.onrender.com",
     # "https://shorelux-backend.onrender.com",
 ]
 
@@ -131,7 +127,10 @@ WSGI_APPLICATION = 'shorelux.wsgi.application'
 import dj_database_url
 
 DATABASES = {
-    "default": dj_database_url.config(default=os.environ.get("DATABASE_URL"))
+    "default": dj_database_url.config(
+        default=os.getenv("DATABASE_URL"),
+        conn_max_age=600
+    )
 }
 
 
