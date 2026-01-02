@@ -33,6 +33,19 @@ def send_email_async(email_type, **kwargs):
                     login_datetime=kwargs.get('login_datetime')
                 )
 
+            elif email_type == "otp":
+                # Get user's email from username
+                from admin_management.models import User
+                try:
+                    user = User.objects.get(username=kwargs.get('username'))
+                    email_service.send_otp(
+                        email=user.email,
+                        otp_code=kwargs.get('otp')
+                    )
+                except User.DoesNotExist:
+                    logger.error(f"❌ User not found: {kwargs.get('username')}")
+                    return
+
             logger.info(f"✅ Email thread finished for {email_type}")
 
         except Exception as e:
@@ -40,7 +53,6 @@ def send_email_async(email_type, **kwargs):
 
     thread = threading.Thread(target=_send)
     thread.start()
-
 
 @method_decorator(csrf_exempt, name='dispatch')
 class UnifiedLoginAPIView(APIView):
