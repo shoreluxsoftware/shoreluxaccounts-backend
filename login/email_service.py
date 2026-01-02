@@ -59,6 +59,21 @@ If this wasn't you, please contact support immediately.
         """
         self.send_email(subject, message)
 
+    def send_otp(self, email, otp_code):
+        """Send OTP email"""
+        subject = "🔐 Your OTP Code"
+        message = f"""
+Your One-Time Password (OTP)
+
+OTP Code: {otp_code}
+
+This code will expire in 10 minutes.
+Do not share this code with anyone.
+
+If you didn't request this, please ignore this email.
+        """
+        self.send_email(subject, message, to_email=email)
+
     def send_checkin_reminder(self, booking):
         """Send check-in reminder email"""
         subject = f"⏰ Check-in Reminder - {booking.guest_name}"
