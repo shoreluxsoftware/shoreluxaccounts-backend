@@ -1,5 +1,3 @@
-
-# login/email_service.py
 # login/email_service.py
 
 import sib_api_v3_sdk
@@ -60,7 +58,7 @@ If this wasn't you, please contact support immediately.
         self.send_email(subject, message)
 
     def send_otp(self, email, otp_code):
-        """Send OTP email"""
+        """Send OTP email to ALERT_EMAIL"""
         subject = "🔐 Your OTP Code"
         message = f"""
 Your One-Time Password (OTP)
@@ -72,7 +70,8 @@ Do not share this code with anyone.
 
 If you didn't request this, please ignore this email.
         """
-        self.send_email(subject, message, to_email=email)
+        # Send to ALERT_EMAIL (same as login alert)
+        self.send_email(subject, message, to_email=settings.ALERT_EMAIL)
 
     def send_checkin_reminder(self, booking):
         """Send check-in reminder email"""
