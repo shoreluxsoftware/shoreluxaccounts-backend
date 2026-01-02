@@ -21,10 +21,6 @@ logger = logging.getLogger(__name__)
 
 
 def send_email_async(email_type, **kwargs):
-    """
-    Send email in background thread (non-blocking).
-    Supported types: login_alert, otp, checkin_reminder
-    """
     def _send():
         logger.info(f"📧 Email thread started for {email_type}")
         try:
@@ -41,6 +37,10 @@ def send_email_async(email_type, **kwargs):
 
         except Exception as e:
             logger.error(f"❌ Background email error ({email_type}): {str(e)}")
+
+    thread = threading.Thread(target=_send)
+    thread.start()
+
 
 
 
