@@ -42,8 +42,6 @@ def send_email_async(email_type, **kwargs):
     thread.start()
 
 
-
-
 @method_decorator(csrf_exempt, name='dispatch')
 class UnifiedLoginAPIView(APIView):
     permission_classes = [AllowAny]
