@@ -32,7 +32,7 @@ class EmailNotificationService:
             
             email = sib_api_v3_sdk.SendSmtpEmail(
                 to=[{"email": recipient_email}],
-                sender={"email": settings.DEFAULT_FROM_EMAIL, "name": "Shorel ux"},
+                sender={"email": settings.DEFAULT_FROM_EMAIL, "name": "Shorelux"},
                 subject=subject,
                 text_content=message,
             )
