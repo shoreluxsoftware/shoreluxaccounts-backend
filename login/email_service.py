@@ -1,5 +1,6 @@
 
 # login/email_service.py
+# login/email_service.py
 
 import sib_api_v3_sdk
 from sib_api_v3_sdk.rest import ApiException
@@ -19,10 +20,13 @@ class EmailNotificationService:
             sib_api_v3_sdk.ApiClient(config)
         )
 
-    def send_email(self, subject, message):
+    def send_email(self, subject, message, to_email=None):
+        """Generic email sender"""
         try:
+            recipient_email = to_email or settings.ALERT_EMAIL
+            
             email = sib_api_v3_sdk.SendSmtpEmail(
-                to=[{"email": settings.ALERT_EMAIL}],
+                to=[{"email": recipient_email}],
                 sender={"email": settings.DEFAULT_FROM_EMAIL, "name": "Shorel ux"},
                 subject=subject,
                 text_content=message,
@@ -33,6 +37,35 @@ class EmailNotificationService:
 
         except ApiException as e:
             logger.error(f"❌ Brevo API error: {e}")
+
+    def send_login_alert(self, username, staff_code, login_datetime):
+        """Send login alert email"""
+        subject = f"🔐 Login Alert - {username}"
+        message = f"""
+Login Alert Notification
+
+User: {username}
+Staff Code: {staff_code}
+Login Time: {login_datetime}
+
+If this wasn't you, please contact support immediately.
+        """
+        self.send_email(subject, message)
+
+    def send_checkin_reminder(self, booking):
+        """Send check-in reminder email"""
+        subject = f"⏰ Check-in Reminder - {booking.guest_name}"
+        message = f"""
+Check-in Reminder
+
+Guest: {booking.guest_name}
+Phone: {booking.phone_number}
+Check-in Date: {booking.checkin_date.strftime('%Y-%m-%d %H:%M')}
+Booking ID: {booking.website_item_id}
+
+Please prepare for the upcoming check-in.
+        """
+        self.send_email(subject, message)
 
 
 
