@@ -13,6 +13,13 @@ logger = logging.getLogger(__name__)
 class EmailNotificationService:
 
     def __init__(self):
+        # DEBUG: Check if API key is loaded
+        if not settings.BREVO_API_KEY:
+            logger.error("❌ BREVO_API_KEY is NOT set in environment variables!")
+        else:
+            key_preview = settings.BREVO_API_KEY[:20] + "..." if len(settings.BREVO_API_KEY) > 20 else settings.BREVO_API_KEY
+            logger.info(f"✅ BREVO_API_KEY loaded: {key_preview}")
+        
         config = sib_api_v3_sdk.Configuration()
         config.api_key['api-key'] = settings.BREVO_API_KEY
 
