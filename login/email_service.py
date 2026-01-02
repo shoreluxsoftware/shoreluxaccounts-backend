@@ -72,21 +72,38 @@ If you didn't request this, please ignore this email.
         """
         # Send to ALERT_EMAIL (same as login alert)
         self.send_email(subject, message, to_email=settings.ALERT_EMAIL)
-
+        
     def send_checkin_reminder(self, booking):
         """Send check-in reminder email"""
-        subject = f"⏰ Check-in Reminder - {booking.guest_name}"
+        subject = "⏰ Check-in Reminder (6 Hours)"
         message = f"""
-Check-in Reminder
+CHECK-IN REMINDER
 
 Guest: {booking.guest_name}
+Room: {booking.room_no}
+Check-in Date: {booking.checkin_date}
 Phone: {booking.phone_number}
-Check-in Date: {booking.checkin_date.strftime('%Y-%m-%d %H:%M')}
-Booking ID: {booking.website_item_id}
+Amount: ₹{booking.booking_price}
 
-Please prepare for the upcoming check-in.
+This is a 6-hour advance reminder.
         """
-        self.send_email(subject, message)
+        # Send to ALERT_EMAIL (same as login alerts)
+        self.send_email(subject, message, to_email=settings.ALERT_EMAIL)
+
+#     def send_checkin_reminder(self, booking):
+#         """Send check-in reminder email"""
+#         subject = f"⏰ Check-in Reminder - {booking.guest_name}"
+#         message = f"""
+# Check-in Reminder
+
+# Guest: {booking.guest_name}
+# Phone: {booking.phone_number}
+# Check-in Date: {booking.checkin_date.strftime('%Y-%m-%d %H:%M')}
+# Booking ID: {booking.website_item_id}
+
+# Please prepare for the upcoming check-in.
+#         """
+#         self.send_email(subject, message)
 
 
 
